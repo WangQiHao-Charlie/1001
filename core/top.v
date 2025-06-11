@@ -10,7 +10,18 @@ module top (
   wire [31:0] current_addr;
   wire [31:0] current_inst;
   wire [31:0] next_addr;
-  assign next_addr = current_addr + 4;
+  branch_unit bu (
+     .opcode(opcode),
+    .funct3(funct3),
+     .pc(current_addr),
+     .rs1_val(rd1),
+     .rs2_val(rd2),
+     .imm_b(imm_b),
+     .imm_j(imm_j),
+     .imm_i(imm_i),
+     .next_pc(next_addr),
+     .branch_taken(branch_taken)
+  );
 
   assign debug_current_addr = current_addr;
   assign debug_current_inst = current_inst;
@@ -50,6 +61,8 @@ module top (
       .imm_i(imm_i),
       .imm_s(imm_s),
       .imm_u(imm_u),
+      .imm_b(imm_b),
+      .imm_j(imm_j),
       .alu_op(alu_op),
       .lsu_op(lsu_op),
       .RegWrite(RegWrite),
@@ -130,9 +143,9 @@ module top (
 
     $display("opcode = 0x%b", RegWrite);  // 仿真中打印验证
   end
-  wire [31:0] lsu_rdata;
-  assign write_back_data = (opcode == 7'b0110111) ? 32'h01 :  // LUI
-      (opcode == 7'b0010111) ? 32'h02:  // AUIPC
+  assign write_back_data = (opcode == 7'b0110111) ? imm_u :
+    (opcode == 7'b0010111) ? current_addr + imm_u :// AUIPC
       (MemRead ? lsu_rdata : ALU_out);
+
 
 endmodule

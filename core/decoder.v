@@ -4,7 +4,7 @@
 module decoder (
     input [31:0] inst,
     output logic [6:0] opcode,
-    output logic [3:0] rd,
+    output logic [4:0] rd,
     rs1,
     rs2,
     output logic [2:0] funct3,
@@ -12,6 +12,8 @@ module decoder (
     output logic [31:0] imm_i,
     imm_s,
     imm_u,
+    imm_b,
+    imm_j,
     output logic [3:0] alu_op,  // 控制 ALU 操作
     output logic RegWrite,
     MemRead,
@@ -51,6 +53,11 @@ module decoder (
     imm_i    = {{20{inst[31]}}, inst[31:20]};
     imm_s    = {{20{inst[31]}}, inst[31:25], inst[11:7]};
     imm_u    = {inst[31:12], 12'b0};
+    // B-type
+    imm_b = {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
+
+    // J-type
+    imm_j = {{12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0};
 
     case (opcode)
       7'b0110011: begin  // R-Type
